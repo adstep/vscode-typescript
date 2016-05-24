@@ -1,5 +1,3 @@
-/// <reference path="../../typings/tsd.d.ts" />
-
 import ItalianGreeter from "./italiangreeter";
 
 describe("ItalianGreeter", () => {

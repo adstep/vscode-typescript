@@ -42,8 +42,8 @@ gulp.task('typescript-compile', ['tslint'], function () {
 
     return [tsResult.js
                 .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: '../src'}))
-                .pipe(gulp.dest('./dist', { overwrite: true})),
-            tsResult.dts.pipe(gulp.dest('./dist', { overwrite: true}))];
+                .pipe(gulp.dest(config.js.src, { overwrite: true})),
+            tsResult.dts.pipe(gulp.dest(config.js.src, { overwrite: true}))];
 });
 
 /**
@@ -74,15 +74,12 @@ gulp.task('test:watch', [], function () {
  * @return {Stream}
  */
 gulp.task('test:serve', ['tests-serve:watch'], function () {
-});
-
-gulp.task('tests-serve:watch', [], function(cb) {
     log('Running the spec runner');
     serveSpecRunner();
-    gulp.watch(config.ts.files, ['tests-serve:build']);
+    gulp.watch(config.ts.files, ['test:build']);
 });
 
-gulp.task('tests-serve:build', [], function(cb) {
+gulp.task('test:build', [], function(cb) {
      gulpSequence(['typescript-compile'], ['imports:inject'])(cb);
 });
 
@@ -155,8 +152,11 @@ var lastNum;
 gulp.task('imports:inject', function(){
 
     log('Injecting imports into system.js');
-    var nameFirst = './util/system.imports';
-    var nameLast = '.js';
+
+    const re = /util\/system.imports(.*).js/g;
+    const root = './';
+    const nameFirst = 'util/system.imports';
+    const nameLast = '.js';
 
     del('./util/system.imports*.js');
 
@@ -165,27 +165,13 @@ gulp.task('imports:inject', function(){
 
     gulp.src(config.imports.template)
         .pipe(injectString(config.js.specs, 'import'))
-        .pipe($.rename(newName))
+        .pipe($.rename(root + newName))
         .pipe(gulp.dest(config.root, {overwrite: true}));
-
-    var re = /util\/system.imports(.*).js/g;
 
     gulp.src('./SpecRunner.html')
-        .pipe(replace(re, 'util/system.imports' + newNum + '.js'))
+        .pipe(replace(re, newName))
         .pipe(gulp.dest(config.root, {overwrite: true}));
 
-});
-
-gulp.task('bs-pause', function() {
-    return browserSync.pause();
-});
-
-gulp.task('bs-resume', function() {
-    return browserSync.pause();
-});
-
-gulp.task('bs-reload', function () {
-  return browserSync.reload();
 });
 
 ////////////////

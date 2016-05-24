@@ -2,7 +2,7 @@
 // Generated on Fri Jan 08 2016 10:17:15 GMT+0100 (CET)
 
 module.exports = function (config) {
-    
+
     // Require gulp.config
     var gulpConfig = require('./gulp.config')();
 
@@ -20,7 +20,7 @@ module.exports = function (config) {
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['systemjs', 'jasmine'],
+        frameworks: ['systemjs', 'browserify', 'jasmine'],
 
         files: gulpConfig.karma.files,
 
@@ -40,7 +40,7 @@ module.exports = function (config) {
         colors: true,
 
         // level of logging
-        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN 
+        // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN
         // || config.LOG_INFO || config.LOG_DEBUG
         logLevel: config.LOG_INFO,
 

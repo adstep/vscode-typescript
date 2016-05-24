@@ -1,5 +1,5 @@
 module.exports = function () {
-    
+
     // Local variables
     var root = './';
     var util = root + 'util/';
@@ -21,23 +21,23 @@ module.exports = function () {
 
         // Root folder
         root: root,
-        
+
         // Source folders
         src: src,
-        
+
         // Build output
         build: './build/',
-        
+
         // Temp folder
         temp: './.tmp/',
-        
+
         // Report folder
         report: report,
-        
+
         // Spec runner html file
         specRunner: root + specRunnerFile,
         specRunnerFile: specRunnerFile,
-        
+
         // JavaScript settings
         js: {
             root: jsRoot,
@@ -61,21 +61,21 @@ module.exports = function () {
                 jsSrc + jsSpecFiles
             ]
         },
-        
+
         // TypeScript settings
         ts: {
             // Folders
             src: tsSrc,
             out: jsSrc,
-            
+
             // Source files
             files: [
                 tsSrc + tsSrcFiles
             ],
-            
+
             // Type definitions
             typings: typings,
-            
+
             // Compiled files
             outFiles: [
                 jsSrc + jsSrcFiles,
@@ -88,25 +88,25 @@ module.exports = function () {
         // Browser sync settings
         browserSync: {
             port: 3000,
-            reloadDelay: 1000,
+            reloadDelay: 1500,
             logLevel: 'info',
             logPrefix: 'spec-runner',
         },
-        
+
         // Inject imports settings
         imports: {
             template: util + 'system.template.js',
             script: util + 'system.imports.js'
         }
     };
-    
+
     // Karma settings
     config.karma = getKarmaOptions();
 
     return config;
-    
+
     ////////////////
-    
+
     function getKarmaOptions() {
         var options = {
             files: [].concat(
@@ -135,7 +135,7 @@ module.exports = function () {
             },
             preprocessors: [],
         };
-        
+
         return options;
     }
 };

@@ -8,8 +8,13 @@ var args = require('yargs').argv;
 var exec = require('child_process').exec;
 var browserSync = require('browser-sync');
 var tslintStylish = require('tslint-stylish');
+var ts = require('gulp-typescript');
+var sourcemaps = require('gulp-sourcemaps');
 var gulp = require('gulp');
+var gulpSequence = require('gulp-sequence');
 var $ = require('gulp-load-plugins')({ lazy: true });
+
+var tsProject = ts.createProject('./src/tsconfig.json');
 
 /**
  * yargs variables can be passed in to alter the behavior, when present.
@@ -34,10 +39,17 @@ gulp.task('scripts-vet', ['vet:es5', 'vet:typescript'], function () {
 /**
  * Compile TypeScript
  */
-gulp.task('typescript-compile', ['vet:typescript', 'clean:generated'], function () {
+gulp.task('typescript-compile', ['vet:typescript'], function () {
 
     log('Compiling TypeScript');
-    exec('node_modules/typescript/bin/tsc -p src');
+    var tsResult = tsProject.src()
+        .pipe(sourcemaps.init())
+        .pipe(ts(tsProject));
+
+    return [tsResult.js
+                .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: '../src'}))
+                .pipe(gulp.dest('./dist', { overwrite: true})),
+            tsResult.dts.pipe(gulp.dest('./dist', { overwrite: true}))];
 });
 
 /**
@@ -52,7 +64,7 @@ gulp.task('typescript-watch', ['typescript-compile'], function () {
  * Run specs once and exit
  * @return {Stream}
  */
-gulp.task('tests-run', ['typescript-compile'], function () {
+gulp.task('tests-run', [], function () {
 
     startTests(true /*singleRun*/);
 });
@@ -61,7 +73,7 @@ gulp.task('tests-run', ['typescript-compile'], function () {
  * Run specs and wait.
  * Watch for file changes and re-run tests on each change
  */
-gulp.task('tests-watch', ['typescript-watch'], function () {
+gulp.task('tests-watch', [], function () {
 
     startTests(false /*singleRun*/);
 });
@@ -70,11 +82,20 @@ gulp.task('tests-watch', ['typescript-watch'], function () {
  * Run the spec runner
  * @return {Stream}
  */
-gulp.task('tests-serve', ['specs:inject', 'imports:inject','typescript-watch'], function () {
+gulp.task('tests-serve', ['tests-serve:watch'], function () {
 
     log('Running the spec runner');
 
     serveSpecRunner();
+});
+
+gulp.task('tests-serve:watch', [], function(cb) {
+    serveSpecRunner();
+    gulp.watch(config.ts.files, ['tests-serve:build']);
+});
+
+gulp.task('tests-serve:build', [], function(cb) {
+     gulpSequence(['typescript-compile'], ['imports:inject'], ['bs-reload'])(cb);
 });
 
 /**
@@ -148,7 +169,11 @@ gulp.task('imports:inject', function(){
     gulp.src(config.imports.template)
         .pipe(injectString(config.js.specs, 'import'))
         .pipe($.rename(config.imports.script))
-        .pipe(gulp.dest(config.root));
+        .pipe(gulp.dest(config.root, {overwrite: true}));
+});
+
+gulp.task('bs-reload', function () {
+  return browserSync.reload();
 });
 
 ////////////////
@@ -239,8 +264,8 @@ function injectString(src, label) {
     src.forEach(function(pattern) {
         glob.sync(pattern)
             .forEach(function(file) {
-                var fileName = path.basename(file, path.extname(file));
-                var specName = path.join(path.dirname(file), fileName);
+                var fileName = '/' + path.basename(file, path.extname(file));
+                var specName = [path.dirname(file), fileName].join('');
                 specNames.push(first + specName + last);
             });
     });
@@ -263,7 +288,7 @@ function serveSpecRunner() {
     var options = {
         port: config.browserSync.port,
         server: config.root,
-        files: config.js.srcSpecs,
+        files: './utils/system.imports.js', //'config.js.srcSpecs',
         logFileChanges: true,
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,

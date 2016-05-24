@@ -9,5 +9,6 @@ System.config({
 
 Promise.all([
     /// inject:import
-    System.import('dist/greeter/greeter.spec')
+    System.import('./dist/greeter/greeter.spec'),
+    System.import('./dist/italiangreeter/italiangreeter.spec')
 ]);

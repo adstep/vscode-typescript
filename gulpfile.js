@@ -30,18 +30,11 @@ gulp.task('help', $.taskListing.withFilters(/:/));
 gulp.task('default', ['help']);
 
 /**
- * Vet both ES5 and TypeScript
- * @return {Stream}
- */
-gulp.task('scripts-vet', ['vet:es5', 'vet:typescript'], function () {
-});
-
-/**
  * Compile TypeScript
  */
-gulp.task('typescript-compile', ['vet:typescript'], function () {
-
+gulp.task('typescript-compile', ['tslint'], function () {
     log('Compiling TypeScript');
+
     var tsResult = tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(ts(tsProject));
@@ -56,7 +49,6 @@ gulp.task('typescript-compile', ['vet:typescript'], function () {
  * Watch and compile TypeScript
  */
 gulp.task('typescript-watch', ['typescript-compile'], function () {
-
     return gulp.watch(config.ts.files, ['typescript-compile']);
 });
 
@@ -64,8 +56,7 @@ gulp.task('typescript-watch', ['typescript-compile'], function () {
  * Run specs once and exit
  * @return {Stream}
  */
-gulp.task('tests-run', [], function () {
-
+gulp.task('test', [], function () {
     startTests(true /*singleRun*/);
 });
 
@@ -73,8 +64,7 @@ gulp.task('tests-run', [], function () {
  * Run specs and wait.
  * Watch for file changes and re-run tests on each change
  */
-gulp.task('tests-watch', [], function () {
-
+gulp.task('test:watch', [], function () {
     startTests(false /*singleRun*/);
 });
 
@@ -82,14 +72,11 @@ gulp.task('tests-watch', [], function () {
  * Run the spec runner
  * @return {Stream}
  */
-gulp.task('tests-serve', ['tests-serve:watch'], function () {
-
-    log('Running the spec runner');
-
-    serveSpecRunner();
+gulp.task('test:serve', ['tests-serve:watch'], function () {
 });
 
 gulp.task('tests-serve:watch', [], function(cb) {
+    log('Running the spec runner');
     serveSpecRunner();
     gulp.watch(config.ts.files, ['tests-serve:build']);
 });
@@ -103,7 +90,7 @@ gulp.task('tests-serve:build', [], function(cb) {
  * --verbose
  * @return {Stream}
  */
-gulp.task('vet:es5', function() {
+gulp.task('jshint', function() {
 
     log('Analyzing ES5 code with JSHint');
 
@@ -119,7 +106,7 @@ gulp.task('vet:es5', function() {
  * vet typescript code
  * @return {Stream}
  */
-gulp.task('vet:typescript', function () {
+gulp.task('tslint', function () {
 
     log('Analyzing typescript code with TSLint');
 
@@ -170,6 +157,14 @@ gulp.task('imports:inject', function(){
         .pipe(injectString(config.js.specs, 'import'))
         .pipe($.rename(config.imports.script))
         .pipe(gulp.dest(config.root, {overwrite: true}));
+});
+
+gulp.task('bs-pause', function() {
+    return browserSync.pause();
+});
+
+gulp.task('bs-resume', function() {
+    return browserSync.pause();
 });
 
 gulp.task('bs-reload', function () {
@@ -233,22 +228,6 @@ function orderSrc(src, order) {
 }
 
 /**
- * Inject files in a sorted sequence at a specified inject label
- * @param   {Array} src   glob pattern for source files
- * @param   {String} label   The label name
- * @param   {Array} order   glob pattern for sort order of the files
- * @returns {Stream}   The stream
- */
-function inject(src, label, order) {
-
-    var options = { read: false, addRootSlash: false };
-    if (label) {
-        options.name = 'inject:' + label;
-    }
-    return $.inject(orderSrc(src, order), options);
-}
-
-/**
  * Inject files as strings at a specified inject label
  * @param   {Array} src   glob pattern for source files
  * @param   {String} label   The label name
@@ -288,7 +267,7 @@ function serveSpecRunner() {
     var options = {
         port: config.browserSync.port,
         server: config.root,
-        files: './utils/system.imports.js', //'config.js.srcSpecs',
+        files: config.js.srcSpecs,
         logFileChanges: true,
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,

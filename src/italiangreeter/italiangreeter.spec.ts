@@ -15,7 +15,7 @@ describe("ItalianGreeter", () => {
             let result = greeter.greet();
 
             // Assert
-            expect(result).toEqual("Ciao World");
+            expect(result).toEqual("Ciao World!!");
         });
     });
 });

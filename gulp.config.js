@@ -88,7 +88,7 @@ module.exports = function () {
         // Browser sync settings
         browserSync: {
             port: 3000,
-            reloadDelay: 1500,
+            reloadDelay: 1000,
             logLevel: 'info',
             logPrefix: 'spec-runner',
         },

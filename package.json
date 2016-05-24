@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/tonysneed/Demo.VSCode.TypeScript#readme",
   "devDependencies": {
-    "browser-sync": "^2.11.0",
+    "browser-sync": "^2.12.8",
     "del": "^2.2.0",
     "es6-module-loader": "^0.17.10",
     "event-stream": "^3.3.2",
@@ -37,6 +37,7 @@
     "gulp-order": "^1.1.1",
     "gulp-print": "^2.0.1",
     "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
     "gulp-sequence": "^0.4.5",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-task-listing": "^1.0.1",

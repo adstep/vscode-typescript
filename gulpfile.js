@@ -12,6 +12,7 @@ var ts = require('gulp-typescript');
 var sourcemaps = require('gulp-sourcemaps');
 var gulp = require('gulp');
 var gulpSequence = require('gulp-sequence');
+var replace = require('gulp-replace');
 var $ = require('gulp-load-plugins')({ lazy: true });
 
 var tsProject = ts.createProject('./src/tsconfig.json');
@@ -82,7 +83,7 @@ gulp.task('tests-serve:watch', [], function(cb) {
 });
 
 gulp.task('tests-serve:build', [], function(cb) {
-     gulpSequence(['typescript-compile'], ['imports:inject'], ['bs-reload'])(cb);
+     gulpSequence(['typescript-compile'], ['imports:inject'])(cb);
 });
 
 /**
@@ -145,6 +146,8 @@ gulp.task('specs:inject', function () {
         .pipe(gulp.dest(config.root));
 });
 
+var lastNum;
+
 /**
  * Inject imports into system.js
  * @return {Stream}
@@ -152,11 +155,25 @@ gulp.task('specs:inject', function () {
 gulp.task('imports:inject', function(){
 
     log('Injecting imports into system.js');
+    var nameFirst = './util/system.imports';
+    var nameLast = '.js';
+
+    del('./util/system.imports*.js');
+
+    var newNum = getRandomInt(0, 100000);
+    var newName = nameFirst + newNum + nameLast;
 
     gulp.src(config.imports.template)
         .pipe(injectString(config.js.specs, 'import'))
-        .pipe($.rename(config.imports.script))
+        .pipe($.rename(newName))
         .pipe(gulp.dest(config.root, {overwrite: true}));
+
+    var re = /util\/system.imports(.*).js/g;
+
+    gulp.src('./SpecRunner.html')
+        .pipe(replace(re, 'util/system.imports' + newNum + '.js'))
+        .pipe(gulp.dest(config.root, {overwrite: true}));
+
 });
 
 gulp.task('bs-pause', function() {
@@ -172,6 +189,12 @@ gulp.task('bs-reload', function () {
 });
 
 ////////////////
+
+// Returns a random integer between min (included) and max (excluded)
+// Using Math.round() will give you a non-uniform distribution!
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
 
 /**
  * Log a message or series of messages using chalk's blue color.
@@ -267,7 +290,7 @@ function serveSpecRunner() {
     var options = {
         port: config.browserSync.port,
         server: config.root,
-        files: config.js.srcSpecs,
+        files: './SpecRunner.html',
         logFileChanges: true,
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,

@@ -13,7 +13,7 @@ describe("Greeter", () => {
             let result = greeter.greet();
 
             // Assert
-            expect(result).toEqual("Hello World");
+            expect(result).toEqual("Hello World!!");
         });
     });
 });

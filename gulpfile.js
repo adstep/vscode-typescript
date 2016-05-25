@@ -17,14 +17,10 @@ var tsconfig = require('gulp-tsconfig-files');
 var watch = require('gulp-watch');
 var $ = require('gulp-load-plugins')({ lazy: true });
 
-var tsProject = ts.createProject('./tsconfig.json', { rootDir: './src', outDir: './dist' });
-
-/**
- * yargs variables can be passed in to alter the behavior, when present.
- * Example: gulp typescript-compile
- *
- * --verbose  : Various tasks will produce more output to the console.
- */
+var tsProject = ts.createProject('./tsconfig.json', {
+    rootDir: config.ts.src,
+    outDir: config.ts.out
+});
 
 /**
  * List the available gulp tasks
@@ -32,19 +28,12 @@ var tsProject = ts.createProject('./tsconfig.json', { rootDir: './src', outDir: 
 gulp.task('help', $.taskListing.withFilters(/:/));
 gulp.task('default', ['help']);
 
-// var tsFilesGlob = (function (c) {
-//   return c.filesGlob || c.files || '**/*.ts';
-// })(require('./tsconfig.json'));
-
 /**
- * Updates files section in tsconfig based on
- * defined filesGlob section
+ * Remove generated files
+ * @return {Stream}
  */
-gulp.task('update-tsconfig', function () {
-    log('Updating tsconfig files');
-
-    gulp.src(tsFilesGlob)
-      .pipe(tsconfig());
+gulp.task('clean', function () {
+    return del(config.ts.out);
 });
 
 /**
@@ -66,8 +55,12 @@ gulp.task('typescript-compile', [], function () {
         }}))
         .pipe(gulp.dest('./dist', { overwrite: true}))
 
-    tsResult.dts
-        .pipe(gulp.dest('./dist', { overwrite: true}));
+    // tsResult.dts
+    //     .pipe(gulp.dest('./dist', { overwrite: true}));
+});
+
+gulp.task('build', function (cb) {
+    gulpSequence(['clean'], ['typescript-compile'])(cb);
 });
 
 /**
@@ -107,7 +100,7 @@ gulp.task('test:serve', ['test:build'], function () {
 });
 
 gulp.task('test:build', [], function(cb) {
-     gulpSequence(['typescript-compile'], ['imports:inject'])(cb);
+     gulpSequence(['build'], ['imports:inject'])(cb);
 });
 
 /**

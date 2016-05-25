@@ -41,6 +41,7 @@
     "gulp-sequence": "^0.4.5",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-task-listing": "^1.0.1",
+    "gulp-tsconfig-files": "^0.4.0",
     "gulp-tslint": "^4.3.0",
     "gulp-typescript": "^2.13.4",
     "gulp-util": "^3.0.7",

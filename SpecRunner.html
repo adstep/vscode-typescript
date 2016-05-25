@@ -12,7 +12,23 @@
     <script src="lib/jasmine-2.4.1/jasmine.js"></script>
     <script src="lib/jasmine-2.4.1/jasmine-html.js"></script>
     <script src="lib/jasmine-2.4.1/boot.js"></script>
-    <script src="util/system.imports23135.js"></script>
+    <script>
+        /* global System */
+        // Configure systemjs to use the .js extension for imports from the src/js folder
+        System.config({
+            packages: {
+                'dist': {defaultExtension: 'js'}
+            }
+        });
+
+
+        Promise.all([
+            System.import('./dist/greeter/greeter.spec'),
+            System.import('./dist/italiangreeter/italiangreeter.spec')
+        ]).then(function() {
+            console.log('donezo');
+        });
+    </script>
 
     <!-- inject:js -->
     <!-- endinject -->
@@ -24,5 +40,6 @@
 
 <body>
 </body>
+
 
 </html>

@@ -13,9 +13,10 @@ var sourcemaps = require('gulp-sourcemaps');
 var gulp = require('gulp');
 var gulpSequence = require('gulp-sequence');
 var replace = require('gulp-replace');
+var tsconfig = require('gulp-tsconfig-files');
 var $ = require('gulp-load-plugins')({ lazy: true });
 
-var tsProject = ts.createProject('./src/tsconfig.json');
+var tsProject = ts.createProject('./tsconfig.json', { rootDir: './src', outDir: './dist' });
 
 /**
  * yargs variables can be passed in to alter the behavior, when present.
@@ -30,10 +31,19 @@ var tsProject = ts.createProject('./src/tsconfig.json');
 gulp.task('help', $.taskListing.withFilters(/:/));
 gulp.task('default', ['help']);
 
+var tsFilesGlob = (function (c) {
+  return c.filesGlob || c.files || '**/*.ts';
+})(require('./tsconfig.json'));
+
+gulp.task('update-tsconfig', function () {
+    gulp.src(tsFilesGlob)
+      .pipe(tsconfig());
+});
+
 /**
  * Compile TypeScript
  */
-gulp.task('typescript-compile', ['tslint'], function () {
+gulp.task('typescript-compile', ['update-tsconfig'], function () {
     log('Compiling TypeScript');
 
     var tsResult = tsProject.src()
@@ -41,9 +51,9 @@ gulp.task('typescript-compile', ['tslint'], function () {
         .pipe(ts(tsProject));
 
     return [tsResult.js
-                .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: '../src'}))
-                .pipe(gulp.dest(config.js.src, { overwrite: true})),
-            tsResult.dts.pipe(gulp.dest(config.js.src, { overwrite: true}))];
+                .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: '../../src'}))
+                .pipe(gulp.dest('./dist', { overwrite: true})),
+            tsResult.dts.pipe(gulp.dest('./dist', { overwrite: true}))];
 });
 
 /**
@@ -73,7 +83,7 @@ gulp.task('test:watch', [], function () {
  * Run the spec runner
  * @return {Stream}
  */
-gulp.task('test:serve', ['tests-serve:watch'], function () {
+gulp.task('test:serve', [], function () {
     log('Running the spec runner');
     serveSpecRunner();
     gulp.watch(config.ts.files, ['test:build']);
@@ -281,7 +291,7 @@ function serveSpecRunner() {
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,
         notify: true,
-        reloadDelay: config.browserSync.reloadDelay,
+        reloadDelay: 1000,
         startPath: config.specRunnerFile
     };
 

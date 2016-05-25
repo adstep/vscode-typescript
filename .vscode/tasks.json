@@ -9,12 +9,14 @@
         {
             "taskName": "typescript-compile",
             "isBuildCommand": true,
+            "isTestCommand": false,
             "showOutput": "always",
             "problemMatcher": "$gulp-tsc"
         },
         {
-            "taskName": "tests-run",
+            "taskName": "test",
             "isTestCommand": true,
+            "isBuildCommand": false,
             "showOutput": "always"
         }
     ]

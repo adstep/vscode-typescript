@@ -11,8 +11,8 @@
     <script src="node_modules/systemjs/dist/system.js"></script>
     <script src="lib/jasmine-2.4.1/jasmine.js"></script>
     <script src="lib/jasmine-2.4.1/jasmine-html.js"></script>
-    <script src="lib/jasmine-2.4.1/boot.js"></script>
-    <script>
+    <script src="util/custom.boot.js"></script>
+    <!--<script>
         /* global System */
         // Configure systemjs to use the .js extension for imports from the src/js folder
         System.config({
@@ -27,8 +27,28 @@
             System.import('./dist/italiangreeter/italiangreeter.spec')
         ]).then(function() {
             console.log('donezo');
+
+            var jasmineEnv = jasmine.getEnv();
+            jasmineEnv.execute();
+            // var htmlReporter = new jasmine.HtmlReporter({
+            //     env: env,
+            //     /*onRaiseExceptionsClick: function() { queryString.navigateWithNewParam("catch", !env.catchingExceptions()); },
+            //     onThrowExpectationsClick: function() { queryString.navigateWithNewParam("throwFailures", !env.throwingExpectationFailures()); },
+            //     onRandomClick: function() { queryString.navigateWithNewParam("random", !env.randomTests()); },
+            //     addToExistingQueryString: function(key, value) { return queryString.fullStringWithNewParam(key, value); },*/
+            //     getContainer: function() { return document.body; },
+            //     createElement: function() { return document.createElement.apply(document, arguments); },
+            //     createTextNode: function() { return document.createTextNode.apply(document, arguments); },
+            //     timer: new jasmine.Timer()
+            // });
+
+            // jasmineEnv.addReporter(reporter);
+            // setTimeout(function () {
+            //     jasmineEnv.execute();
+            // // Without this setTimeout, the specs don't always get execute in webKit browsers, I don't know why
+            // }, 10);
         });
-    </script>
+    </script>-->
 
     <!-- inject:js -->
     <!-- endinject -->

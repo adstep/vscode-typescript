@@ -14,6 +14,7 @@ var gulp = require('gulp');
 var gulpSequence = require('gulp-sequence');
 var replace = require('gulp-replace');
 var tsconfig = require('gulp-tsconfig-files');
+var watch = require('gulp-watch');
 var $ = require('gulp-load-plugins')({ lazy: true });
 
 var tsProject = ts.createProject('./tsconfig.json', { rootDir: './src', outDir: './dist' });
@@ -31,11 +32,17 @@ var tsProject = ts.createProject('./tsconfig.json', { rootDir: './src', outDir: 
 gulp.task('help', $.taskListing.withFilters(/:/));
 gulp.task('default', ['help']);
 
-var tsFilesGlob = (function (c) {
-  return c.filesGlob || c.files || '**/*.ts';
-})(require('./tsconfig.json'));
+// var tsFilesGlob = (function (c) {
+//   return c.filesGlob || c.files || '**/*.ts';
+// })(require('./tsconfig.json'));
 
+/**
+ * Updates files section in tsconfig based on
+ * defined filesGlob section
+ */
 gulp.task('update-tsconfig', function () {
+    log('Updating tsconfig files');
+
     gulp.src(tsFilesGlob)
       .pipe(tsconfig());
 });
@@ -43,17 +50,24 @@ gulp.task('update-tsconfig', function () {
 /**
  * Compile TypeScript
  */
-gulp.task('typescript-compile', ['update-tsconfig'], function () {
+gulp.task('typescript-compile', [], function () {
     log('Compiling TypeScript');
 
     var tsResult = tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(ts(tsProject));
 
-    return [tsResult.js
-                .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: '../../src'}))
-                .pipe(gulp.dest('./dist', { overwrite: true})),
-            tsResult.dts.pipe(gulp.dest('./dist', { overwrite: true}))];
+   tsResult.js
+        .pipe(sourcemaps.write('.', {
+            includeContent: false,
+            sourceRoot: function(file) {
+                let depth = file.history[0].match(/\\/g).length;
+                return '../'.repeat(depth) + 'src';
+        }}))
+        .pipe(gulp.dest('./dist', { overwrite: true}))
+
+    tsResult.dts
+        .pipe(gulp.dest('./dist', { overwrite: true}));
 });
 
 /**
@@ -83,10 +97,13 @@ gulp.task('test:watch', [], function () {
  * Run the spec runner
  * @return {Stream}
  */
-gulp.task('test:serve', [], function () {
+gulp.task('test:serve', ['test:build'], function () {
     log('Running the spec runner');
     serveSpecRunner();
-    gulp.watch(config.ts.files, ['test:build']);
+    watch(config.ts.files, function() {
+       gulp.start('test:build');
+    })
+    //gulp.watch(config.ts.files, ['test:build']);
 });
 
 gulp.task('test:build', [], function(cb) {
@@ -153,8 +170,6 @@ gulp.task('specs:inject', function () {
         .pipe(gulp.dest(config.root));
 });
 
-var lastNum;
-
 /**
  * Inject imports into system.js
  * @return {Stream}
@@ -163,31 +178,27 @@ gulp.task('imports:inject', function(){
 
     log('Injecting imports into system.js');
 
-    const re = /util\/system.imports(.*).js/g;
-    const root = './';
-    const nameFirst = 'util/system.imports';
-    const nameLast = '.js';
-
-    del('./util/system.imports*.js');
-
-    var newNum = getRandomInt(0, 100000);
-    var newName = nameFirst + newNum + nameLast;
-
-    gulp.src(config.imports.template)
-        .pipe(injectString(config.js.specs, 'import'))
-        .pipe($.rename(root + newName))
-        .pipe(gulp.dest(config.root, {overwrite: true}));
-
-    gulp.src('./SpecRunner.html')
-        .pipe(replace(re, newName))
-        .pipe(gulp.dest(config.root, {overwrite: true}));
-
+    gulp.src('./util/custom.boot.js')
+        .pipe($.inject(gulp.src(['./dist/**/*.spec.js'], {read: false}), {
+            starttag: 'Promise.all([',
+            endtag: '])',
+            transform: function (filepath, file, i, length) {
+                var importStatement = 'System.import(\'' + filepath + '\')';
+                if (i !== length - 1) {
+                    importStatement += ',';
+                }
+                return importStatement;
+            }
+        }))
+        .pipe(gulp.dest('./util/', {overwrite: true}));
 });
 
-////////////////
-
-// Returns a random integer between min (included) and max (excluded)
-// Using Math.round() will give you a non-uniform distribution!
+/**
+ * Generates a random integer
+ * @param  {number} min - Lower bound (inclusive) for generated number
+ * @param  {number} max - Upper bound (exclusive) fro generated number
+ * @returns {number}
+ */
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -212,7 +223,7 @@ function log(msg) {
 /**
  * Start the tests using karma.
  * @param  {boolean} singleRun - True means run once and end (CI), or keep running (dev)
- * @return {undefined}
+ * @returns {undefined}
  */
 function startTests(singleRun) {
 
@@ -286,7 +297,7 @@ function serveSpecRunner() {
     var options = {
         port: config.browserSync.port,
         server: config.root,
-        files: './SpecRunner.html',
+        files: './src/**/*.ts',
         logFileChanges: true,
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,

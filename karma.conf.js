@@ -16,11 +16,14 @@ module.exports = function (config) {
             'karma-phantomjs-launcher',
             'karma-typescript-preprocessor',
             'karma-jasmine',
+            'karma-mocha-reporter'
         ],
 
         // frameworks to use
         // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-        frameworks: ['systemjs', 'browserify', 'jasmine'],
+        frameworks: ['systemjs', 'jasmine'],
+
+        reporters: ['mocha'],
 
         files: gulpConfig.karma.files,
 

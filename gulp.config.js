@@ -16,6 +16,7 @@ module.exports = function () {
     var typings = './typings/local/';
     var report = './report/';
     var specRunnerFile = 'SpecRunner.html';
+    var customBootFile = 'custom.boot.js';
 
     var config = {
 
@@ -93,11 +94,7 @@ module.exports = function () {
             logPrefix: 'spec-runner',
         },
 
-        // Inject imports settings
-        imports: {
-            template: util + 'system.template.js',
-            script: util + 'system.imports.js'
-        }
+        customBoot: util + customBootFile
     };
 
     // Karma settings

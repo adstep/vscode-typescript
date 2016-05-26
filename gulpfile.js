@@ -39,7 +39,7 @@ gulp.task('clean', function () {
 /**
  * Compile TypeScript
  */
-gulp.task('typescript-compile', [], function () {
+gulp.task('internal-compile', [], function () {
     log('Compiling TypeScript');
 
     var tsResult = tsProject.src()
@@ -53,21 +53,18 @@ gulp.task('typescript-compile', [], function () {
                 let depth = file.history[0].match(/\\/g).length;
                 return '../'.repeat(depth) + 'src';
         }}))
-        .pipe(gulp.dest('./dist', { overwrite: true}))
-
-    // tsResult.dts
-    //     .pipe(gulp.dest('./dist', { overwrite: true}));
+        .pipe(gulp.dest(config.ts.out));
 });
 
 gulp.task('build', function (cb) {
-    gulpSequence(['clean'], ['typescript-compile'])(cb);
+    gulpSequence(['clean'], ['internal-compile'])(cb);
 });
 
 /**
  * Watch and compile TypeScript
  */
-gulp.task('typescript-watch', ['typescript-compile'], function () {
-    return gulp.watch(config.ts.files, ['typescript-compile']);
+gulp.task('ts-watch', ['internal-compile'], function () {
+    return gulp.watch(config.ts.files, ['internal-compile']);
 });
 
 /**
@@ -90,34 +87,17 @@ gulp.task('test:watch', [], function () {
  * Run the spec runner
  * @return {Stream}
  */
-gulp.task('test:serve', ['test:build'], function () {
+gulp.task('test:serve', ['internal-test-build'], function () {
     log('Running the spec runner');
+    
     serveSpecRunner();
     watch(config.ts.files, function() {
-       gulp.start('test:build');
-    })
-    //gulp.watch(config.ts.files, ['test:build']);
+       gulp.start('internal-test-build');
+    });
 });
 
-gulp.task('test:build', [], function(cb) {
-     gulpSequence(['build'], ['imports:inject'])(cb);
-});
-
-/**
- * vet es5 code
- * --verbose
- * @return {Stream}
- */
-gulp.task('jshint', function() {
-
-    log('Analyzing ES5 code with JSHint');
-
-    return gulp
-        .src(config.js.root)
-        .pipe($.if(args.verbose, $.print()))
-        .pipe($.jshint())
-        .pipe($.jshint.reporter('jshint-stylish', {verbose: true}))
-        .pipe($.jshint.reporter('fail'));
+gulp.task('internal-test-build', [], function(cb) {
+     gulpSequence(['build'], ['internal-imports-inject'])(cb);
 });
 
 /**
@@ -139,40 +119,15 @@ gulp.task('tslint', function () {
 });
 
 /**
- * Remove generated files
- * @return {Stream}
- */
-gulp.task('clean:generated', function () {
-
-    log('Cleaning generated files: ' + $.util.colors.blue(config.ts.out));
-    return del(config.ts.out);
-});
-
-/**
- * Inject all the spec files into the SpecRunner.html
- * @return {Stream}
- */
-gulp.task('specs:inject', function () {
-
-    log('Injecting scripts into the spec runner');
-
-    return gulp
-        .src(config.specRunner)
-        .pipe(inject(config.js.src, '', config.js.order))
-        .pipe(inject(config.js.specs, 'specs', ['**/*']))
-        .pipe(gulp.dest(config.root));
-});
-
-/**
  * Inject imports into system.js
  * @return {Stream}
  */
-gulp.task('imports:inject', function(){
+gulp.task('internal-imports-inject', function(){
 
     log('Injecting imports into system.js');
 
-    gulp.src('./util/custom.boot.js')
-        .pipe($.inject(gulp.src(['./dist/**/*.spec.js'], {read: false}), {
+    gulp.src(config.customBoot)
+        .pipe($.inject(gulp.src(config.js.specs, {read: false}), {
             starttag: 'Promise.all([',
             endtag: '])',
             transform: function (filepath, file, i, length) {
@@ -290,7 +245,7 @@ function serveSpecRunner() {
     var options = {
         port: config.browserSync.port,
         server: config.root,
-        files: './src/**/*.ts',
+        files: config.ts.src,
         logFileChanges: true,
         logLevel: config.browserSync.logLevel,
         logPrefix: config.browserSync.logPrefix,

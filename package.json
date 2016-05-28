@@ -28,6 +28,7 @@
     "express": "^4.13.3",
     "glob": "^6.0.4",
     "gulp": "^3.9.0",
+    "gulp-help": "^1.6.1",
     "gulp-if": "^2.0.0",
     "gulp-inject": "^3.0.0",
     "gulp-inject-string": "^1.1.0",

@@ -62,7 +62,7 @@
 			"stopOnEntry": false,
 			"args": [
                 // Replace 'default' with name of gulp task to run
-                "typescript-compile"
+                "tslint"
             ],
 			"cwd": "${workspaceRoot}"
 		}

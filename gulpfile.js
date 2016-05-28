@@ -7,6 +7,7 @@ var path = require('path');
 var args = require('yargs').argv;
 var exec = require('child_process').exec;
 var browserSync = require('browser-sync');
+var tslint = require('tslint');
 var tslintStylish = require('tslint-stylish');
 var ts = require('gulp-typescript');
 var sourcemaps = require('gulp-sourcemaps');
@@ -56,20 +57,19 @@ gulp.task('internal-compile', [], function () {
         .pipe(gulp.dest(config.ts.out));
 });
 
-gulp.task('build', function (cb) {
+gulp.task('build', ['tslint'], function (cb) {
     gulpSequence(['clean'], ['internal-compile'])(cb);
 });
 
 /**
  * Watch and compile TypeScript
  */
-gulp.task('ts-watch', ['internal-compile'], function () {
-    return gulp.watch(config.ts.files, ['internal-compile']);
+gulp.task('build:watch', ['build'], function () {
+    return gulp.watch(config.ts.files, ['build']);
 });
 
 /**
  * Run specs once and exit
- * @return {Stream}
  */
 gulp.task('test', [], function () {
     startTests(true /*singleRun*/);
@@ -85,7 +85,7 @@ gulp.task('test:watch', [], function () {
 
 /**
  * Run the spec runner
- * @return {Stream}
+ * Watch for file changes and reload spec runner on each change
  */
 gulp.task('test:serve', ['internal-test-build'], function () {
     log('Running the spec runner');
@@ -96,6 +96,10 @@ gulp.task('test:serve', ['internal-test-build'], function () {
     });
 });
 
+/**
+ * Build the project and import
+ * into spec runner
+ */
 gulp.task('internal-test-build', [], function(cb) {
      gulpSequence(['build'], ['internal-imports-inject'])(cb);
 });
@@ -105,9 +109,6 @@ gulp.task('internal-test-build', [], function(cb) {
  * @return {Stream}
  */
 gulp.task('tslint', function () {
-
-    log('Analyzing typescript code with TSLint');
-
     return gulp
         .src(config.ts.files)
         .pipe($.tslint())
@@ -120,12 +121,8 @@ gulp.task('tslint', function () {
 
 /**
  * Inject imports into system.js
- * @return {Stream}
  */
 gulp.task('internal-imports-inject', function(){
-
-    log('Injecting imports into system.js');
-
     gulp.src(config.customBoot)
         .pipe($.inject(gulp.src(config.js.specs, {read: false}), {
             starttag: 'Promise.all([',
@@ -156,7 +153,6 @@ function getRandomInt(min, max) {
  * Can pass in a string, object or array.
  */
 function log(msg) {
-
     if (typeof (msg) === 'object') {
         for (var item in msg) {
             if (msg.hasOwnProperty(item)) {
@@ -174,10 +170,7 @@ function log(msg) {
  * @returns {undefined}
  */
 function startTests(singleRun) {
-
     var Server = require('karma').Server;
-
-    log('Karma started');
 
     var server = new Server({
         configFile: __dirname + '/karma.conf.js',
@@ -185,24 +178,7 @@ function startTests(singleRun) {
         singleRun: !!singleRun
     });
 
-    server.on('run_complete', function (browser, result) {
-        log('Karma completed');
-    });
-
     server.start();
-}
-
-/**
- * Order a stream
- * @param   {Stream} src   The gulp.src stream
- * @param   {Array} order Glob array pattern
- * @returns {Stream} The ordered stream
- */
-function orderSrc(src, order) {
-
-    return gulp
-        .src(src)
-        .pipe($.if(order, $.order(order)));
 }
 
 /**
@@ -212,7 +188,6 @@ function orderSrc(src, order) {
  * @returns {Stream}   The stream
  */
 function injectString(src, label) {
-
     var search = '/// inject:' + label;
     var first = '\n    System.import(\'';
     var last = '\')';
@@ -235,12 +210,9 @@ function injectString(src, label) {
  * --verbose
  */
 function serveSpecRunner() {
-
     if (browserSync.active) {
         return;
     }
-
-    log('Starting BrowserSync on port ' + config.browserSyncPort);
 
     var options = {
         port: config.browserSync.port,

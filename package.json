@@ -13,8 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/adstep/vscode-typescript.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "visual-studio-code",
+    "typescript"
+  ],
+  "author": {
+    "name": "Adam Stephenson",
+    "email": "stephensonadamj@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/adstep/vscode-typescript/issues"

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tonysneed/Demo.VSCode.TypeScript.svg?branch=master)](https://travis-ci.org/tonysneed/Demo.VSCode.TypeScript)
+[![Build Status](https://api.travis-ci.org/adstep/vscode-typescript.svg?branch=master)](https://api.travis-ci.org/adstep/vscode-typescript)
 # Demo: Sample Visual Studio Code project for TypeScript
 
 1. You should first install the following **extensions** for Visual Studio Code.

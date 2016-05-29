@@ -1,25 +1,25 @@
 {
-  "name": "Demo.VSCode.TypeScript",
+  "name": "vscode-typescriptt",
   "version": "1.0.0",
-  "description": "Sample Visual Studio Code project for TypeScript",
+  "description": "Node-TypeScript Project for Visual Studio Codet",
   "main": "index.js",
   "scripts": {
     "init": "npm install",
-    "typings": "tsd install -r -o --save-dev",
-    "compile": "rm -rf dist && tsc -p src",
-    "test": "gulp tests-run"
+    "typings": "typings install",
+    "compile": "gulp build",
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tonysneed/Demo.VSCode.TypeScript.git"
+    "url": "git+https://github.com/adstep/vscode-typescript.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tonysneed/Demo.VSCode.TypeScript/issues"
+    "url": "https://github.com/adstep/vscode-typescript/issues"
   },
-  "homepage": "https://github.com/tonysneed/Demo.VSCode.TypeScript#readme",
+  "homepage": "https://github.com/adstep/vscode-typescript#readme",
   "devDependencies": {
     "browser-sync": "^2.12.8",
     "del": "^2.2.0",

@@ -1,11 +1,8 @@
 import {Greeter} from "./greeter";
 
 describe("Greeter", () => {
-
     describe("greet", () => {
-
         it("returns Hello World", () => {
-
             // Arrange
             let greeter = new Greeter("World");
 

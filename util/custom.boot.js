@@ -117,9 +117,7 @@
   });
 
 Promise.all([
-  System.import('/dist/italiangreeter/italiangreeter.spec.js'),
-  System.import('/dist/greeter/greeter.spec.js'),
-  System.import('/dist/greeter/subgreeter/subgreeter.spec.js')
+  System.import('/dist/greeter/greeter.spec.js')
   ]).then(function() {
   htmlReporter.initialize();
   env.execute();

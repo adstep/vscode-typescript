@@ -26,12 +26,11 @@ var tsProject = ts.createProject('./tsconfig.json', {
 /**
  * List the available gulp tasks
  */
-gulp.task('help', $.taskListing.withFilters(/:/));
+gulp.task('help', $.taskListing.withFilters(/:/, /internal/));
 gulp.task('default', ['help']);
 
 /**
  * Remove generated files
- * @return {Stream}
  */
 gulp.task('clean', function () {
     return del(config.ts.out);
@@ -41,24 +40,28 @@ gulp.task('clean', function () {
  * Compile TypeScript
  */
 gulp.task('internal-compile', [], function () {
-    log('Compiling TypeScript');
-
     var tsResult = tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(ts(tsProject));
 
-   tsResult.js
+    return tsResult.js
         .pipe(sourcemaps.write('.', {
             includeContent: false,
-            sourceRoot: function(file) {
+            sourceRoot: function (file) {
                 let depth = file.history[0].match(/\\/g).length;
                 return '../'.repeat(depth) + 'src';
         }}))
         .pipe(gulp.dest(config.ts.out));
 });
 
-gulp.task('build', ['tslint'], function (cb) {
-    gulpSequence(['clean'], ['internal-compile'])(cb);
+/**
+ * Compile TypeScript
+ */
+gulp.task('build', [], function (cb) {
+    gulpSequence(
+        ['internal-tslint'],
+        ['clean'],
+        ['internal-compile'])(cb);
 });
 
 /**
@@ -88,8 +91,6 @@ gulp.task('test:watch', [], function () {
  * Watch for file changes and reload spec runner on each change
  */
 gulp.task('test:serve', ['internal-test-build'], function () {
-    log('Running the spec runner');
-    
     serveSpecRunner();
     watch(config.ts.files, function() {
        gulp.start('internal-test-build');
@@ -108,7 +109,7 @@ gulp.task('internal-test-build', [], function(cb) {
  * vet typescript code
  * @return {Stream}
  */
-gulp.task('tslint', function () {
+gulp.task('internal-tslint', function () {
     return gulp
         .src(config.ts.files)
         .pipe($.tslint())
@@ -145,23 +146,7 @@ gulp.task('internal-imports-inject', function(){
  * @returns {number}
  */
 function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
-
-/**
- * Log a message or series of messages using chalk's blue color.
- * Can pass in a string, object or array.
- */
-function log(msg) {
-    if (typeof (msg) === 'object') {
-        for (var item in msg) {
-            if (msg.hasOwnProperty(item)) {
-                $.util.log($.util.colors.blue(msg[item]));
-            }
-        }
-    } else {
-        $.util.log($.util.colors.blue(msg));
-    }
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 
 /**
